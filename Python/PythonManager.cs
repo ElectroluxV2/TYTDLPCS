@@ -7,10 +7,10 @@ public static partial class PythonManager
 
     static PythonManager()
     {
-        var pipInstall = CreateCliProcess(PipPath, "install --upgrade-strategy eager youtube-dl");
-        pipInstall.Start();
-        var output = pipInstall.StandardOutput.ReadToEnd();
-        Console.WriteLine(output);
-        pipInstall.WaitForExit();
+        // var pipInstall = CreateCliProcess(PipPath, "install --upgrade-strategy eager youtube-dl");
+        // pipInstall.Start();
+        // var output = pipInstall.StandardOutput.ReadToEnd();
+        // Console.WriteLine(output);
+        // pipInstall.WaitForExit();
     }
 }
