@@ -1,10 +1,10 @@
 using System.Diagnostics;
 
-namespace TYTDLPCS;
+namespace TYTDLPCS.Python;
 
-public static partial class ScrapManager
+public static partial class PythonManager
 {
-    private static Process CreateCliProcess(string executable, string arguments)
+    public static Process CreateCliProcess(string executable, string arguments)
     {
         return new Process
         {

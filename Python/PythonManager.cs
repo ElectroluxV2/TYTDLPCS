@@ -1,11 +1,11 @@
-namespace TYTDLPCS;
+namespace TYTDLPCS.Python;
 
-public static partial class ScrapManager
+public static partial class PythonManager
 {
     public static readonly string PythonPath = ExamineWithWhich("python3");
     public static readonly string PipPath = ExamineWithWhich("pip");
 
-    static ScrapManager()
+    static PythonManager()
     {
         var pipInstall = CreateCliProcess(PipPath, "install --upgrade-strategy eager youtube-dl");
         pipInstall.Start();

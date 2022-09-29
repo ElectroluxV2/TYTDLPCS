@@ -1,8 +1,6 @@
-using System.Diagnostics;
+namespace TYTDLPCS.Python;
 
-namespace TYTDLPCS;
-
-public static partial class ScrapManager
+public static partial class PythonManager
 {
     private static string ExamineWithWhich(string arguments)
     {

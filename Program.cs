@@ -1,6 +1,5 @@
-﻿using System.Diagnostics;
-using TYTDLPCS;
+﻿using TYTDLPCS.Python;
 
-var path = ScrapManager.PythonPath;
+var path = PythonManager.PythonPath;
 
 Console.WriteLine($"[{path}]");
