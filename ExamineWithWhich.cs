@@ -4,24 +4,12 @@ namespace TYTDLPCS;
 
 public static partial class ScrapManager
 {
-    private static string ExaminePythonPath()
+    private static string ExamineWithWhich(string arguments)
     {
-        var process = new Process
-        {
-            StartInfo =
-            {
-                FileName = "which",
-                Arguments = "python3",
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false
-            }
-        };
-
+        var process = CreateCliProcess("which", arguments);
         process.Start();
         var path = process.StandardOutput.ReadLine();
         process.WaitForExit();
-        return path ?? throw new ApplicationException("Can't find python3 in path");
+        return path ?? throw new ApplicationException($"Can't find {arguments} in path");
     }
 }
