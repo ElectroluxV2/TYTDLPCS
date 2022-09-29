@@ -4,9 +4,9 @@ using static Python.PythonManager;
 
 class YtDlP : IDownloader
 {
-    void IDownloader.Download()
+    void IDownloader.Download(string url)
     {
-        var download = CreateCliProcess("yt-dlp", "https://www.youtube.com/watch?v=tPEE9ZwTmy0");
+        var download = CreateCliProcess("yt-dlp", $"\"{url}\"");
         download.Start();
         download.WaitForExit();
     }

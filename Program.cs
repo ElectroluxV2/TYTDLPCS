@@ -1,5 +1,10 @@
 ﻿using TYTDLPCS.Python;
+// using static TYTDLPCS.BruteforceDownloader;
+
 
 var path = PythonManager.PythonPath;
 
-Console.WriteLine($"[{path}]");
+
+await TYTDLPCS.BruteforceDownloader.ExtremeDownload();
+
+// Console.WriteLine($"[{path}]");

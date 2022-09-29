@@ -1,7 +1,7 @@
 namespace TYTDLPCS;
 
 interface IDownloader {
-    abstract void Download();
+    abstract void Download(string url);
 
     abstract void Update();
 }
