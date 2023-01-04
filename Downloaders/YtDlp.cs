@@ -14,9 +14,6 @@ public sealed class YtDlp : IDownloader
 
     public Command InstallOrUpgrade()
     {
-        return Cli
-            .Wrap(PythonManager.PipPath)
-            .WithArguments(
-                $"install --target {PythonManager.PackagesPath} --upgrade-strategy eager --upgrade {PackageName}");
+        return PythonManager.InstalPackage(PackageName);
     }
 }
