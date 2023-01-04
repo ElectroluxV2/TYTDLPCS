@@ -1,15 +1,66 @@
+using System.Text;
+using CliWrap;
 using CliWrap.EventStream;
 using Microsoft.Extensions.Logging;
 using TYTDLPCS.Logging;
 
 namespace TYTDLPCS.Downloaders;
 
-public static class DownloadManager
+public static class DownloadManager // TODO: Split manager to partial class
 {
-    private static readonly TimeSpan DefaultInstallTimeout = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan DefaultCommandTimeout = TimeSpan.FromMinutes(1);
     private static readonly ILogger Logger = LoggerManager.Factory.CreateLogger(typeof(DownloadManager));
     
     public static readonly IDownloader YtDlp = new YtDlp();
+
+    public static async IAsyncEnumerable<DownloadManagerEvent> DownloadAsync(this IDownloader downloader, string url, CancellationToken? cancellationToken = null)
+    {
+        var downloaderFullName = downloader.GetType().FullName!;
+        Logger.LogInformation("Fetching metadata for {Url} using {DownloaderName} ", url, downloaderFullName);
+        
+        // If no token provided, we will kill installation after 1 minute no matter of output
+        var token = cancellationToken.GetValueOrDefault(new CancellationTokenSource(DefaultCommandTimeout).Token);
+        
+        var downloadMetadataCommand = downloader.DownloadMetadata(url);
+        
+        // Pobierz json
+        var stdOutBuffer = new StringBuilder();
+        var stdErrBuffer = new StringBuilder();
+        var jsonCommandResult = await downloadMetadataCommand
+            .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
+            .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteAsync(token);
+
+        if (jsonCommandResult.ExitCode != 0)
+        {
+            yield return new MetadataError(
+                url,
+                stdErrBuffer.ToString(),
+                downloaderFullName,
+                jsonCommandResult.ExitCode,
+                jsonCommandResult.ExitTime,
+                jsonCommandResult.RunTime,
+                jsonCommandResult.StartTime
+            );
+            yield break;
+        }
+        
+        
+        // var json = JsonContent.Create(stdOutBuffer.ToString());
+        // Logger.LogWarning("Metadata error: {MetaDataError}", stdErrBuffer.ToString());
+        
+        // Logger.LogInformation("Metadata response: {MetaData}", json);
+
+        yield return new MetadataContent(url, stdOutBuffer.ToString());
+        // Jak sie wyjebalo to yield event error
+
+        // Jak nie to event start z metadata
+
+        // Eventy z binary data
+
+        // Event z koniec
+    }
 
     public static async Task<bool> InstallOrUpdateAsync(this IDownloader downloader, CancellationToken? cancellationToken = null)
     {
@@ -17,7 +68,7 @@ public static class DownloadManager
         Logger.LogInformation("Start of update of {DownloaderName} ", downloaderFullName);
         
         // If no token provided, we will kill installation after 1 minute, no matter of output
-        var token = cancellationToken.GetValueOrDefault(new CancellationTokenSource(DefaultInstallTimeout).Token);
+        var token = cancellationToken.GetValueOrDefault(new CancellationTokenSource(DefaultCommandTimeout).Token);
         
         var installCommand = downloader.InstallOrUpgrade();
 

@@ -6,10 +6,19 @@ namespace TYTDLPCS.Downloaders;
 public sealed class YtDlp : IDownloader
 {
     private const string PackageName = "yt-dlp";
-    
-    public void Download(string url)
+
+    public Command DownloadMetadata(string url)
     {
-        throw new NotImplementedException();
+        return Cli
+            .Wrap(PythonManager.GetPackageBinary(PackageName))
+            .WithArguments($"-J {url}");
+    }
+
+    public Command DownloadContent(string url)
+    {
+        return Cli
+            .Wrap(PythonManager.GetPackageBinary(PackageName))
+            .WithArguments($"-J --no-simulate -o - {url}");
     }
 
     public Command InstallOrUpgrade()

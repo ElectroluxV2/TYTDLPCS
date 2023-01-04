@@ -4,7 +4,8 @@ namespace TYTDLPCS;
 
 public interface IDownloader
 {
-    void Download(string url);
+    Command DownloadMetadata(string url);
+    Command DownloadContent(string url);
 
     Command InstallOrUpgrade();
 }
