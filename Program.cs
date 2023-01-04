@@ -1,10 +1,10 @@
-﻿using TYTDLPCS.Python;
-// using static TYTDLPCS.BruteforceDownloader;
-
+﻿using TYTDLPCS.Downloaders;
+using TYTDLPCS.Python;
 
 var path = PythonManager.PythonPath;
 
+Console.WriteLine($"[{path}]");
 
-await TYTDLPCS.BruteforceDownloader.ExtremeDownload();
+var succeed = await DownloadManager.YtDlp.InstallOrUpdateAsync();
 
-// Console.WriteLine($"[{path}]");
+Console.WriteLine($"Sucess : {succeed}");
