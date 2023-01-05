@@ -11,14 +11,14 @@ await foreach (var downloadManagerEvent in DownloadManager.YtDlp.DownloadAsync("
             logger.LogError("Failed to download metadata for {Url}: {Message}", metadataError.Url, metadataError.Message);
             break;
         case MetadataSuccess metadataSuccess:
-            logger.LogInformation("{}", metadataSuccess.Metdata.Url);
+            logger.LogInformation("{}", metadataSuccess.Metadata.Url);
 
-            if (metadataSuccess.Metdata?.Entries is null)
+            if (metadataSuccess.Metadata.Entries is null)
             {
                 continue; // Not a playlist
             }
 
-            foreach (var metadataEntry in metadataSuccess.Metdata.Entries)
+            foreach (var metadataEntry in metadataSuccess.Metadata.Entries)
                 logger.LogInformation("{}", metadataEntry?.Url);
 
             break;

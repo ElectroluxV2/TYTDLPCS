@@ -9,5 +9,5 @@ public record MetadataError(
 ) : DownloadManagerEvent;
 
 public record MetadataSuccess(
-    VideoMetdata Metdata
+    VideoMetdata Metadata
 ) : DownloadManagerEvent;

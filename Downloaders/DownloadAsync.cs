@@ -11,6 +11,20 @@ public static partial class DownloadManager
 {
     public static async IAsyncEnumerable<DownloadManagerEvent> DownloadAsync(this IDownloader downloader, string url, CancellationToken? cancellationToken = null)
     {
+        var metadataEvent = await downloader.HandleMetadata(url);
+
+        yield return metadataEvent;
+
+        if (metadataEvent is not MetadataSuccess metadataSuccessEvent)
+        {
+            yield break;
+        }
+
+        await foreach (var downloadManagerEvent in downloader.HandleContent(metadataSuccessEvent.Metadata)) yield return downloadManagerEvent;
+    }
+    
+    private static async Task<DownloadManagerEvent> HandleMetadata(this IDownloader downloader, string url, CancellationToken? cancellationToken = null)
+    {
         var downloaderFullName = downloader.GetType().FullName!;
         Logger.LogInformation("Fetching metadata for {Url} using {DownloaderName} ", url, downloaderFullName);
 
@@ -89,12 +103,11 @@ public static partial class DownloadManager
 
         if (error is not null)
         {
-            yield return new MetadataError(
+             return new MetadataError(
                 url,
                 downloaderFullName,
                 error
             );
-            yield break;
         }
 
         await streamWriter.FlushAsync();
@@ -119,14 +132,18 @@ public static partial class DownloadManager
 
         if (metadata is null)
         {
-            yield return new MetadataError(
+            return new MetadataError(
                 url,
                 downloaderFullName,
                 "Downloader error TODO: implement error message"
             );
-            yield break;
         }
 
-        yield return new MetadataSuccess(metadata);
+        return new MetadataSuccess(metadata);
+    }
+
+    private static async IAsyncEnumerable<DownloadManagerEvent> HandleContent(this IDownloader downloader, VideoMetdata metadata, CancellationToken? cancellationToken = null)
+    {
+        yield break;
     }
 }
