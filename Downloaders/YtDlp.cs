@@ -11,14 +11,14 @@ public sealed class YtDlp : IDownloader
     {
         return Cli
             .Wrap(PythonManager.GetPackageBinary(PackageName))
-            .WithArguments($"-J {url}");
+            .WithArguments($"--add-header user-agent:Mozilla/5.0 -J {url}");
     }
 
     public Command DownloadContent(string url)
     {
         return Cli
             .Wrap(PythonManager.GetPackageBinary(PackageName))
-            .WithArguments($"-J --no-simulate -o - {url}");
+            .WithArguments($"--add-header user-agent:Mozilla/5.0 -J --no-simulate -o - {url}");
     }
 
     public Command InstallOrUpgrade()

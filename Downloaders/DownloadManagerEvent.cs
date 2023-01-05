@@ -12,8 +12,6 @@ public record MetadataError(
     DateTimeOffset StartTime
 ) : DownloadManagerEvent;
 
-
-public record MetadataContent(
-    string Url,
-    string Json
+public record MetadataSuccess(
+    VideoMetdata Metdata
 ) : DownloadManagerEvent;

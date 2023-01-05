@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using CliWrap;
 using CliWrap.EventStream;
 using Microsoft.Extensions.Logging;
@@ -10,29 +12,48 @@ public static class DownloadManager // TODO: Split manager to partial class
 {
     private static readonly TimeSpan DefaultCommandTimeout = TimeSpan.FromMinutes(1);
     private static readonly ILogger Logger = LoggerManager.Factory.CreateLogger(typeof(DownloadManager));
-    
+
     public static readonly IDownloader YtDlp = new YtDlp();
 
     public static async IAsyncEnumerable<DownloadManagerEvent> DownloadAsync(this IDownloader downloader, string url, CancellationToken? cancellationToken = null)
     {
         var downloaderFullName = downloader.GetType().FullName!;
         Logger.LogInformation("Fetching metadata for {Url} using {DownloaderName} ", url, downloaderFullName);
-        
+
         // If no token provided, we will kill installation after 1 minute no matter of output
         var token = cancellationToken.GetValueOrDefault(new CancellationTokenSource(DefaultCommandTimeout).Token);
-        
+
         var downloadMetadataCommand = downloader.DownloadMetadata(url);
-        
-        // Pobierz json
-        var stdOutBuffer = new StringBuilder();
+
+        var stdOutBuffer = new MemoryStream();
         var stdErrBuffer = new StringBuilder();
-        var jsonCommandResult = await downloadMetadataCommand
-            .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
+        var jsonCommandResult = await (downloadMetadataCommand
+            // .WithStandardOutputPipe(PipeTarget.ToStream(stdOutBuffer))
             .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
-            .WithValidation(CommandResultValidation.None)
+            .WithValidation(CommandResultValidation.None) | stdOutBuffer)
             .ExecuteAsync(token);
 
-        if (jsonCommandResult.ExitCode != 0)
+        stdOutBuffer.Position = 0; /*reset Position to start*/
+        VideoMetdata? metadata = null;
+        
+        try
+        {
+            metadata = (await JsonSerializer.DeserializeAsync<VideoMetdata>(stdOutBuffer, cancellationToken: token, options: new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString
+            }))!;
+
+            if (metadata is null) throw new Exception();
+        }
+        catch
+        {
+            // ignored
+        }
+
+        if (metadata is null)
         {
             yield return new MetadataError(
                 url,
@@ -45,14 +66,15 @@ public static class DownloadManager // TODO: Split manager to partial class
             );
             yield break;
         }
-        
-        
-        // var json = JsonContent.Create(stdOutBuffer.ToString());
+
+
         // Logger.LogWarning("Metadata error: {MetaDataError}", stdErrBuffer.ToString());
-        
+
         // Logger.LogInformation("Metadata response: {MetaData}", json);
 
-        yield return new MetadataContent(url, stdOutBuffer.ToString());
+        
+
+        yield return new MetadataSuccess(metadata);
         // Jak sie wyjebalo to yield event error
 
         // Jak nie to event start z metadata
@@ -66,10 +88,10 @@ public static class DownloadManager // TODO: Split manager to partial class
     {
         var downloaderFullName = downloader.GetType().FullName;
         Logger.LogInformation("Start of update of {DownloaderName} ", downloaderFullName);
-        
+
         // If no token provided, we will kill installation after 1 minute, no matter of output
         var token = cancellationToken.GetValueOrDefault(new CancellationTokenSource(DefaultCommandTimeout).Token);
-        
+
         var installCommand = downloader.InstallOrUpgrade();
 
         var success = false;
@@ -104,7 +126,7 @@ public static class DownloadManager // TODO: Split manager to partial class
         {
             Logger.LogWarning(exception, "Failed to install {DownloaderName}", downloaderFullName);
         }
-        
+
         return success;
     }
 }
