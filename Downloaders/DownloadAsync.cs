@@ -93,11 +93,11 @@ public static partial class DownloadManager
         await streamWriter.FlushAsync();
         memoryStream.Seek(0, SeekOrigin.Begin);
 
-        VideoMetdata? metadata = null;
+        VideoMetadata? metadata = null;
 
         try
         {
-            metadata = await JsonSerializer.DeserializeAsync<VideoMetdata>(memoryStream, cancellationToken: cancellationTokenSource.Token, options: new JsonSerializerOptions
+            metadata = await JsonSerializer.DeserializeAsync<VideoMetadata>(memoryStream, cancellationToken: cancellationTokenSource.Token, options: new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 AllowTrailingCommas = true,
@@ -122,7 +122,7 @@ public static partial class DownloadManager
         return new MetadataSuccess(metadata);
     }
 
-    private static async IAsyncEnumerable<DownloadManagerEvent> HandleContent(this IDownloader downloader, VideoMetdata metadata, CancellationToken? cancellationToken = null)
+    private static async IAsyncEnumerable<DownloadManagerEvent> HandleContent(this IDownloader downloader, VideoMetadata metadata, CancellationToken? cancellationToken = null)
     {
         yield break;
     }
