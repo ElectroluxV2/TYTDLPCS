@@ -8,16 +8,18 @@ await foreach (var downloadManagerEvent in DownloadManager.YtDlp.DownloadAsync("
     switch (downloadManagerEvent)
     {
         case MetadataError metadataError:
-            logger.LogError("Failed to download metadata for {Url}. Error: {Message}", metadataError.Url, metadataError.Message);
+            logger.LogError("Failed to download metadata for {Url}: {Message}", metadataError.Url, metadataError.Message);
             break;
         case MetadataSuccess metadataSuccess:
-            // logger.LogInformation("Downloaded metadata for {Url}, Length {Length}", metadataSuccess.Url, metadataSuccess.Json.Length);
-            Console.WriteLine(metadataSuccess.Metdata.Url);
-            
-            foreach (var metdataEntry in metadataSuccess.Metdata.Entries)
+            logger.LogInformation("{}", metadataSuccess.Metdata.Url);
+
+            if (metadataSuccess.Metdata?.Entries is null)
             {
-                Console.WriteLine(metdataEntry?.Url);
+                continue; // Not a playlist
             }
-            
+
+            foreach (var metadataEntry in metadataSuccess.Metdata.Entries)
+                logger.LogInformation("{}", metadataEntry?.Url);
+
             break;
     }

@@ -9,5 +9,6 @@ public record VideoMetdata(
     int Duration,
     (string Id, string Url)[] Thumbnails,
     VideoMetdata?[]? Entries,
-    [property: JsonPropertyName("original_url")] string Url
+    [property: JsonPropertyName("original_url")]
+    string Url
 );

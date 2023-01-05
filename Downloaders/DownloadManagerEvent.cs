@@ -4,12 +4,8 @@ public abstract record DownloadManagerEvent;
 
 public record MetadataError(
     string Url,
-    string Message,
     string DownloaderFullName,
-    int ExitCode,
-    DateTimeOffset ExitTime,
-    TimeSpan RunTime,
-    DateTimeOffset StartTime
+    string Message
 ) : DownloadManagerEvent;
 
 public record MetadataSuccess(
