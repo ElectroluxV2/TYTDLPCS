@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using CliWrap;
 using CliWrap.EventStream;
 using Microsoft.Extensions.Logging;
+using TYTDLPCS.Common;
 
 namespace TYTDLPCS.Downloaders;
 
@@ -34,36 +35,15 @@ public static partial class DownloadManager
         var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8);
         var command = downloader.DownloadMetadata(url).WithValidation(CommandResultValidation.None);
 
-        var watchdogToken = new CancellationTokenSource();
-        long watchdogCurrent = 0;
-        var watchdog = new Thread(() =>
-        {
-            long localWatchdogLast = 0;
-            
-            while (!watchdogToken.IsCancellationRequested)
-            {
-                watchdogToken.Token.WaitHandle.WaitOne(ChildMaxTickTime);
-                
-                // ReSharper disable once AccessToModifiedClosure
-                var localWatchdogCurrent = Interlocked.Read(ref watchdogCurrent);
-                if (localWatchdogLast == localWatchdogCurrent)
-                {
-                    cancellationTokenSource.Cancel();
-                    break;
-                }
-
-                localWatchdogLast = localWatchdogCurrent;
-            }
-        });
-        
-        watchdog.Start();
+        var watchdogTokenSource = new CancellationTokenSource();
+        var (watchdog, tick) = TickBasedWatchDog.Make(ChildMaxTickTime, cancellationTokenSource, watchdogTokenSource.Token);
 
         string? error = null;
         try
         {
             await foreach (var commandEvent in command.ListenAsync(Encoding.UTF8, Encoding.UTF8, cancellationTokenSource.Token, cancellationTokenSource.Token))
             {
-                Interlocked.Increment(ref watchdogCurrent);
+                tick();
 
                 switch (commandEvent)
                 {
@@ -98,7 +78,7 @@ public static partial class DownloadManager
             error = $"{downloaderFullName} failed to report metadata download progress in {ChildMaxTickTime.ToString()}.";
         }
         
-        watchdogToken.Cancel();
+        watchdogTokenSource.Cancel();
         watchdog.Join();
 
         if (error is not null)
