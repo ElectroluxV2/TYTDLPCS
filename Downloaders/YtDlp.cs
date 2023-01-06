@@ -18,7 +18,7 @@ public sealed class YtDlp : IDownloader
     {
         return Cli
             .Wrap(PythonManager.GetPackageBinary(PackageName))
-            .WithArguments($"--add-header user-agent:Mozilla/5.0 -J --no-simulate -o - {url}");
+            .WithArguments($"--progress --add-header user-agent:Mozilla/5.0 -o - {url}");
     }
 
     public Command InstallOrUpgrade()

@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -124,6 +125,65 @@ public static partial class DownloadManager
 
     private static async IAsyncEnumerable<DownloadManagerEvent> HandleContent(this IDownloader downloader, VideoMetadata metadata, CancellationToken? cancellationToken = null)
     {
-        yield break;
+        var downloaderFullName = downloader.GetType().FullName!;
+        Logger.LogInformation("Fetching content for {Url} using {DownloaderName} ", metadata.Url, downloaderFullName);
+
+        var memoryStream = new MemoryStream();
+        memoryStream.Seek(0, SeekOrigin.Begin);
+
+        var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken ?? new CancellationToken());
+        var command = downloader
+            .DownloadContent(metadata.Url)
+            .WithValidation(CommandResultValidation.None)
+            .WithStandardOutputPipe(PipeTarget.ToStream(memoryStream));
+
+        var watchdogTokenSource = new CancellationTokenSource();
+        var (watchdog, tick) = TickBasedWatchDog.Make(ChildMaxTickTime, cancellationTokenSource, watchdogTokenSource.Token);
+
+        await foreach (var commandEvent in command.ListenAsync(Encoding.UTF8, Encoding.UTF8, cancellationTokenSource.Token, cancellationTokenSource.Token))
+        {
+            tick();
+
+            switch (commandEvent)
+            {
+                case StartedCommandEvent startedCommand:
+                    Logger.LogInformation("Spawned child process for {DownloaderName}; PID: {StartedProcessId}",
+                        downloaderFullName, startedCommand.ProcessId);
+                        yield return new ContentBegin(metadata);
+                    break;
+                case StandardOutputCommandEvent stdOut:
+                {
+                    // Actually we should check if this library is capable of passing raw bytes as event param instead of this hack
+                    var memoryStreamBuffer = memoryStream.GetBuffer();
+
+                    // We would like to pass std out bytes as separate independent chunks
+                    var chunk = memoryStreamBuffer.ToArray();
+                    // But only if there are any bytes, this event occurs more often than actual data push (MemoryStream has internal buffer)
+                    if (chunk.Length > 0)
+                        yield return new ContentBytes(chunk, metadata);
+                    
+                    // Clear memory stream buffer and reset it back to start
+                    Array.Clear(memoryStreamBuffer, 0, memoryStreamBuffer.Length);
+                    memoryStream.Position = 0;
+                    memoryStream.SetLength(0);
+                    memoryStream.Capacity = 0;
+
+                    break;
+                }
+                    
+                case StandardErrorCommandEvent stdErr:
+                    Logger.LogInformation("STDERR[{DownloaderName}] {Log}", downloaderFullName, stdErr.Text);
+                    break;
+                case ExitedCommandEvent exited:
+                    Logger.LogInformation("Child process for {DownloaderName} exited with code {Code}",
+                        downloaderFullName, exited.ExitCode);
+                    break;
+            }
+        }
+
+        watchdogTokenSource.Cancel();
+        watchdog.Join();
+
+        yield return new ContentEnd(metadata);
     }
 }

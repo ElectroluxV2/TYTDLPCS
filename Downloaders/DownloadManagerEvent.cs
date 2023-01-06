@@ -11,3 +11,20 @@ public record MetadataError(
 public record MetadataSuccess(
     VideoMetadata Metadata
 ) : DownloadManagerEvent;
+
+public record ContentBytes(
+    byte[] Bytes,
+    VideoMetadata Metadata
+) : DownloadManagerEvent;
+
+public record ContentError(
+    VideoMetadata Metadata
+) : DownloadManagerEvent;
+
+public record ContentBegin(
+    VideoMetadata Metadata
+) : DownloadManagerEvent;
+
+public record ContentEnd(
+    VideoMetadata Metadata
+) : DownloadManagerEvent;
