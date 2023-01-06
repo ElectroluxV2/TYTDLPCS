@@ -128,7 +128,7 @@ public static partial class DownloadManager
         var downloaderFullName = downloader.GetType().FullName!;
         Logger.LogInformation("Fetching content for {Url} using {DownloaderName} ", metadata.Url, downloaderFullName);
 
-        var memoryStream = new MemoryStream();
+        using var memoryStream = new MemoryStream();
         memoryStream.Seek(0, SeekOrigin.Begin);
 
         var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken ?? new CancellationToken());
@@ -159,8 +159,9 @@ public static partial class DownloadManager
                     // We would like to pass std out bytes as separate independent chunks
                     var chunk = memoryStreamBuffer.ToArray();
                     // But only if there are any bytes, this event occurs more often than actual data push (MemoryStream has internal buffer)
-                    if (chunk.Length > 0)
-                        yield return new ContentBytes(chunk, metadata);
+                    if (chunk.Length == 0) break;
+                    
+                    yield return new ContentBytes(chunk, metadata);
                     
                     // Clear memory stream buffer and reset it back to start
                     Array.Clear(memoryStreamBuffer, 0, memoryStreamBuffer.Length);
