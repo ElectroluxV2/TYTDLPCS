@@ -3,8 +3,9 @@ using TYTDLPCS.Downloaders;
 using TYTDLPCS.Logging;
 
 var logger = LoggerManager.Factory.CreateLogger(typeof(Program));
-var url = "https://www.youtube.com/watch?v=tPEE9ZwTmy0";
-url = "https://www.youtube.com/watch?v=fQtEVhOfKAA";
+var url = "https://www.youtube.com/watch?v=tPEE9ZwTmy0"; // 1s
+// url = "https://www.youtube.com/watch?v=fQtEVhOfKAA"; // 8s
+url = "https://www.youtube.com/watch?v=kFMZUxX6K6o"; // 4m15s
 
 FileStream? file = null;
 
@@ -24,7 +25,7 @@ await foreach (var downloadManagerEvent in DownloadManager.YtDlp.DownloadAsync(u
             file = File.Create(contentBegin.Metadata.Id + ".mp4");
             file.Seek(0, SeekOrigin.Begin);
             break;
-            
+
         case ContentBytes contentBytes:
             logger.LogCritical("L: {}", contentBytes.Bytes.Length);
             file!.Write(contentBytes.Bytes);
