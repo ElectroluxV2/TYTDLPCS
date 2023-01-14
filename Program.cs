@@ -4,8 +4,9 @@ using TYTDLPCS.Logging;
 
 var logger = LoggerManager.Factory.CreateLogger(typeof(Program));
 var url = "https://www.youtube.com/watch?v=tPEE9ZwTmy0"; // 1s
-// url = "https://www.youtube.com/watch?v=fQtEVhOfKAA"; // 8s
+url = "https://www.youtube.com/watch?v=fQtEVhOfKAA"; // 8s
 url = "https://www.youtube.com/watch?v=kFMZUxX6K6o"; // 4m15s
+url = "https://www.youtube.com/watch?v=bF8BP7RJ8Dc";
 
 FileStream? file = null;
 

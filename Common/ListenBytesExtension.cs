@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CliWrap;
 using CliWrap.EventStream;
+using Overby.Extensions.AsyncBinaryReaderWriter;
 
 namespace TYTDLPCS.Common;
 
@@ -23,13 +24,41 @@ public static class ListenBytesExtension
 
         var stdOutPipe = PipeTarget.Merge(
             command.StandardOutputPipe,
-            PipeTarget.Create((async (stream, token) =>
+            PipeTarget.Create(async (stream, token) =>
             {
-                using var ms = new MemoryStream();
-                Console.WriteLine("aaa");
-                await stream.CopyToAsync(ms, token).ConfigureAwait(false);
-                channel.PublishAsync(new StandardOutputBytesCommandEvent(ms.ToArray()), token).ConfigureAwait(false);
-            }))
+                using var reader = new AsyncBinaryReader(stream, Encoding.UTF8, false);
+                var list = new List<byte>();
+                while (true)
+                {
+                    // Console.WriteLine("aaa");
+                    try
+                    {
+                        // Console.WriteLine("bbb");
+                        list.Add(await reader.ReadByteAsync(token).ConfigureAwait(false));
+                        // Console.WriteLine("ccc");
+                    }
+                    catch (Exception e)
+                    {
+                        await channel.PublishAsync(new StandardOutputBytesCommandEvent(list.ToArray()), token);//.ConfigureAwait(false);
+
+                        break;
+                    }
+
+                    if (list.Count != 256) continue;
+                    
+                    // Console.WriteLine($"C: ${list.Count}");
+                    
+                    await channel.PublishAsync(new StandardOutputBytesCommandEvent(list.ToArray()), token);//.ConfigureAwait(false);
+                    list.Clear();
+                }
+
+                // using var ms = new MemoryStream();
+                // Console.WriteLine("aaa");
+                // await stream.CopyToAsync(ms, token).ConfigureAwait(false);
+                // channel.PublishAsync(new StandardOutputBytesCommandEvent(ms.ToArray()), token).ConfigureAwait(false);
+                
+                // return Task.CompletedTask;
+            })
         );
 
         var stdErrPipe = PipeTarget.Merge(
