@@ -34,7 +34,7 @@ public static class ListenBytesExtension
                     try
                     {
                         // Console.WriteLine("bbb");
-                        list.Add(await reader.ReadByteAsync(token).ConfigureAwait(false));
+                        list.Add(await reader.ReadBytesAsync(256, token).ConfigureAwait(false));
                         // Console.WriteLine("ccc");
                     }
                     catch (Exception e)
