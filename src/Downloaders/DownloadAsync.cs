@@ -139,7 +139,7 @@ public static partial class DownloadManager
         var watchdogTokenSource = new CancellationTokenSource();
         var (watchdog, tick) = TickBasedWatchDog.Make(ChildMaxTickTime, cancellationTokenSource, watchdogTokenSource.Token);
 
-        await foreach (var commandEvent in command.ListenBytesAsync(256, Encoding.UTF8, Encoding.UTF8, cancellationTokenSource.Token, cancellationTokenSource.Token))
+        await foreach (var commandEvent in command.ListenBytesAsync(1024 * 1024, Encoding.UTF8, Encoding.UTF8, cancellationTokenSource.Token, cancellationTokenSource.Token))
         {
             tick();
 
