@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -140,7 +139,7 @@ public static partial class DownloadManager
         var watchdogTokenSource = new CancellationTokenSource();
         var (watchdog, tick) = TickBasedWatchDog.Make(ChildMaxTickTime, cancellationTokenSource, watchdogTokenSource.Token);
 
-        await foreach (var commandEvent in command.ListenAsync(Encoding.UTF8, Encoding.UTF8, cancellationTokenSource.Token, cancellationTokenSource.Token))
+        await foreach (var commandEvent in command.ListenBytesAsync(256, Encoding.UTF8, Encoding.UTF8, cancellationTokenSource.Token, cancellationTokenSource.Token))
         {
             tick();
 
@@ -151,26 +150,10 @@ public static partial class DownloadManager
                         downloaderFullName, startedCommand.ProcessId);
                         yield return new ContentBegin(metadata);
                     break;
-                case StandardOutputCommandEvent stdOut:
-                {
-                    // Actually we should check if this library is capable of passing raw bytes as event param instead of this hack
-                    var memoryStreamBuffer = memoryStream.GetBuffer();
 
-                    // We would like to pass std out bytes as separate independent chunks
-                    var chunk = memoryStreamBuffer.ToArray();
-                    // But only if there are any bytes, this event occurs more often than actual data push (MemoryStream has internal buffer)
-                    if (chunk.Length == 0) break;
-                    
-                    yield return new ContentBytes(chunk, metadata);
-                    
-                    // Clear memory stream buffer and reset it back to start
-                    Array.Clear(memoryStreamBuffer, 0, memoryStreamBuffer.Length);
-                    memoryStream.Position = 0;
-                    memoryStream.SetLength(0);
-                    memoryStream.Capacity = 0;
-
+                case StandardBinaryOutputCommandEvent stdOut:
+                    yield return new ContentBytes(stdOut.Bytes, metadata);
                     break;
-                }
                     
                 case StandardErrorCommandEvent stdErr:
                     Logger.LogInformation("STDERR[{DownloaderName}] {Log}", downloaderFullName, stdErr.Text);

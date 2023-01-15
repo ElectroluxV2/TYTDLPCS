@@ -1,0 +1,3 @@
+[submodule "CliWrap"]
+	path = CliWrap
+	url = ../CliWrap
