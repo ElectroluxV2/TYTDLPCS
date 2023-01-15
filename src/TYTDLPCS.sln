@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CliWrap", "..\CliWrap\CliWr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CliWrap.Signaler", "..\CliWrap\CliWrap.Signaler\CliWrap.Signaler.csproj", "{D3D81754-C85B-4844-AF08-6649048A48CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TyranoKurwusBot", "TyranoKurwusBot\TyranoKurwusBot.csproj", "{51F894DA-8EC1-4D10-B22C-238022AF37C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{D3D81754-C85B-4844-AF08-6649048A48CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3D81754-C85B-4844-AF08-6649048A48CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3D81754-C85B-4844-AF08-6649048A48CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51F894DA-8EC1-4D10-B22C-238022AF37C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51F894DA-8EC1-4D10-B22C-238022AF37C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51F894DA-8EC1-4D10-B22C-238022AF37C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51F894DA-8EC1-4D10-B22C-238022AF37C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
