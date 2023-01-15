@@ -12,6 +12,7 @@ public static partial class DownloadManager
 {
     public static async IAsyncEnumerable<DownloadManagerEvent> DownloadAsync(this IDownloader downloader, string url, CancellationToken? cancellationToken = null)
     {
+        
         var metadataEvent = await downloader.HandleMetadata(url);
 
         yield return metadataEvent;
