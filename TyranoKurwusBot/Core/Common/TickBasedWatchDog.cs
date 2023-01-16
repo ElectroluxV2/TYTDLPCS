@@ -1,4 +1,4 @@
-namespace TYTDLPCS.Common;
+namespace TyranoKurwusBot.Core.Common;
 
 public static class TickBasedWatchDog
 {

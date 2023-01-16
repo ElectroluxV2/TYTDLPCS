@@ -1,7 +1,6 @@
 using CliWrap.EventStream;
-using Microsoft.Extensions.Logging;
 
-namespace TYTDLPCS.Downloaders;
+namespace TyranoKurwusBot.Core.Downloaders;
 
 public static partial class DownloadManager
 {

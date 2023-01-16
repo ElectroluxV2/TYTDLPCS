@@ -3,10 +3,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using CliWrap;
 using CliWrap.EventStream;
-using Microsoft.Extensions.Logging;
-using TYTDLPCS.Common;
+using TyranoKurwusBot.Core.Common;
 
-namespace TYTDLPCS.Downloaders;
+namespace TyranoKurwusBot.Core.Downloaders;
 
 public static partial class DownloadManager
 {

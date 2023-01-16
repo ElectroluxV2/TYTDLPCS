@@ -1,7 +1,6 @@
-using Microsoft.Extensions.Logging;
-using TYTDLPCS.Logging;
+using TyranoKurwusBot.Core.Logging;
 
-namespace TYTDLPCS.Downloaders;
+namespace TyranoKurwusBot.Core.Downloaders;
 
 public static partial class DownloadManager
 {
@@ -9,4 +8,6 @@ public static partial class DownloadManager
     private static readonly TimeSpan InstallCommandTimeout = TimeSpan.FromMinutes(1);
     private static readonly ILogger Logger = LoggerManager.Factory.CreateLogger(typeof(DownloadManager));
     public static readonly IDownloader YtDlp = new YtDlp();
+
+    public static readonly IDownloader[] AvailableDownloders = {YtDlp};
 }

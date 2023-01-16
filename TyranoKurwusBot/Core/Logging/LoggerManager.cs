@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Logging;
-
-namespace TYTDLPCS.Logging;
+namespace TyranoKurwusBot.Core.Logging;
 
 public static class LoggerManager
 {

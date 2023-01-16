@@ -39,11 +39,13 @@ builder.Services.AddHttpClient("telegram_bot_client")
 
 // Dummy business-logic service
 builder.Services.AddScoped<UpdateHandlers>();
+builder.Services.AddScoped<VideoRequestService>();
 
 // There are several strategies for completing asynchronous tasks during startup.
 // Some of them could be found in this article https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-part-1/
 // We are going to use IHostedService to add and later remove Webhook
 builder.Services.AddHostedService<ConfigureWebhook>();
+builder.Services.AddHostedService<UpdateDownloaders>();
 
 var app = builder.Build();
 

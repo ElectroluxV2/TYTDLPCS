@@ -1,4 +1,4 @@
-namespace TYTDLPCS.Python;
+namespace TyranoKurwusBot.Core.Python;
 
 public static partial class PythonManager
 {

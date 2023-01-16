@@ -1,7 +1,7 @@
 using CliWrap;
-using TYTDLPCS.Python;
+using PythonManager = TyranoKurwusBot.Core.Python.PythonManager;
 
-namespace TYTDLPCS.Downloaders;
+namespace TyranoKurwusBot.Core.Downloaders;
 
 public sealed class YtDlp : IDownloader
 {

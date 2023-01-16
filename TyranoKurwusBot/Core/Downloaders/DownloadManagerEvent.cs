@@ -1,4 +1,4 @@
-namespace TYTDLPCS.Downloaders;
+namespace TyranoKurwusBot.Core.Downloaders;
 
 public abstract record DownloadManagerEvent;
 

@@ -1,6 +1,6 @@
 using CliWrap;
 
-namespace TYTDLPCS.Python;
+namespace TyranoKurwusBot.Core.Python;
 
 public partial class PythonManager
 {

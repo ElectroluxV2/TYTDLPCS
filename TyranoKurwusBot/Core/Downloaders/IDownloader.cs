@@ -1,6 +1,6 @@
 using CliWrap;
 
-namespace TYTDLPCS;
+namespace TyranoKurwusBot.Core.Downloaders;
 
 public interface IDownloader
 {

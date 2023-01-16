@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace TYTDLPCS.Downloaders;
+namespace TyranoKurwusBot.Core.Downloaders;
 
 public record VideoMetadata(
     string Id,
