@@ -1,14 +1,14 @@
 using CliWrap;
-using PythonManager = TyranoKurwusBot.Core.Python.PythonManager;
+using TyranoKurwusBot.Core.Python;
 
 namespace TyranoKurwusBot.Core.Downloaders;
 
 public sealed class YtDlp : IDownloader
 {
-    private const string PackageName = "yt-dlp";
+    public string PackageName => "yt-dlp";
 
     public Command DownloadMetadata(string url)
-    {   
+    {
         PythonManager.EnsurePackageExists(PackageName);
 
         return Cli

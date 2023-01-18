@@ -4,7 +4,8 @@ namespace TyranoKurwusBot.Core.Downloaders;
 
 public static partial class DownloadManager
 {
-    public static async Task<bool> InstallOrUpdateAsync(this IDownloader downloader, CancellationToken? cancellationToken = null)
+    public static async Task<bool> InstallOrUpdateAsync(this IDownloader downloader,
+        CancellationToken? cancellationToken = null)
     {
         var downloaderFullName = downloader.GetType().FullName;
         Logger.LogInformation("Start of update of {DownloaderName} ", downloaderFullName);

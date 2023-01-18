@@ -3,7 +3,7 @@ using TyranoKurwusBot;
 using TyranoKurwusBot.Controllers;
 using TyranoKurwusBot.Services;
 
-var builder = WebApplication.CreateBuilder(args);   
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
@@ -30,12 +30,12 @@ var botConfiguration = botConfigurationSection.Get<BotConfiguration>();
 //  https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests#typed-clients
 //  https://docs.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests
 builder.Services.AddHttpClient("telegram_bot_client")
-                .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
-                {
-                    BotConfiguration? botConfig = sp.GetConfiguration<BotConfiguration>();
-                    TelegramBotClientOptions options = new(botConfig.BotToken);
-                    return new TelegramBotClient(options, httpClient);
-                });
+    .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
+    {
+        var botConfig = sp.GetConfiguration<BotConfiguration>();
+        TelegramBotClientOptions options = new(botConfig.BotToken);
+        return new TelegramBotClient(options, httpClient);
+    });
 
 // Dummy business-logic service
 builder.Services.AddScoped<UpdateHandlers>();
@@ -45,6 +45,7 @@ builder.Services.AddScoped<VideoRequestService>();
 // Some of them could be found in this article https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-part-1/
 // We are going to use IHostedService to add and later remove Webhook
 builder.Services.AddHostedService<ConfigureWebhook>();
+builder.Services.AddHostedService<PreparePackagesService>();
 builder.Services.AddHostedService<UpdateDownloaders>();
 
 var app = builder.Build();

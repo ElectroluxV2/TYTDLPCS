@@ -10,6 +10,7 @@ public class UpdateDownloaders : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var timer = new PeriodicTimer(TimeSpan.FromDays(1));
+
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
             foreach (var downloader in DownloadManager.AvailableDownloders)

@@ -2,7 +2,7 @@ namespace TyranoKurwusBot.Core.Python;
 
 public static partial class PythonManager
 {
-    private static string ExamineWithWhich(string arguments)
+    public static string ExamineWithWhich(string arguments)
     {
         var process = CreateCliProcess("which", arguments);
         process.Start();
