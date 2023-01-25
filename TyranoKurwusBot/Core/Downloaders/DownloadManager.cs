@@ -9,5 +9,5 @@ public static partial class DownloadManager
     private static readonly ILogger Logger = LoggerManager.Factory.CreateLogger(typeof(DownloadManager));
     public static readonly IDownloader YtDlp = new YtDlp();
 
-    public static readonly IDownloader[] AvailableDownloders = {YtDlp};
+    public static readonly IDownloader[] AvailableDownloaders = {YtDlp};
 }

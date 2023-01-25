@@ -12,7 +12,7 @@ public class UpdateDownloaders : BackgroundService
         var timer = new PeriodicTimer(TimeSpan.FromDays(1));
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
-            foreach (var downloader in DownloadManager.AvailableDownloders)
+            foreach (var downloader in DownloadManager.AvailableDownloaders)
             {
                 await downloader.InstallOrUpdateAsync();
             }
