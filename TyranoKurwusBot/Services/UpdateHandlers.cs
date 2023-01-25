@@ -33,7 +33,7 @@ public class UpdateHandlers
         return Task.CompletedTask;
     }
 
-    public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken)
+    public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken = default)
     {
         var handler = update switch
         {

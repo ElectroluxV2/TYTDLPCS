@@ -26,7 +26,7 @@ public class BotController : ControllerBase
         {
             using var scope = serviceScopeFactory.CreateScope();
             var updateHandlers = scope.ServiceProvider.GetRequiredService<UpdateHandlers>();
-            await updateHandlers.HandleUpdateAsync(update, new CancellationToken());
+            await updateHandlers.HandleUpdateAsync(update);
         });
         
         _logger.LogCritical("STOP");
