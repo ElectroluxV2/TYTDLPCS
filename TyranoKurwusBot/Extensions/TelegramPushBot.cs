@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Web;
 using Telegram.Bot;
 using TyranoKurwusBot.Core.Downloaders;
 
@@ -17,7 +18,8 @@ public class TelegramPushBot
         _logger = logger;
     }
 
-    public async Task PushVideo(long chatId, MetadataSuccess metadataSuccess, CancellationToken cancellationToken,
+    public async Task PushVideo(long chatId, string username, MetadataSuccess metadataSuccess,
+        CancellationToken cancellationToken,
         Func<Stream, HttpContent, TransportContext, Task> onStreamAvailable)
     {
         using var multipartFormDataContent = new MultipartFormDataContent("Upload----" + DateTime.Now.ToString(CultureInfo.InvariantCulture));
@@ -27,7 +29,8 @@ public class TelegramPushBot
         multipartFormDataContent.Add(pushStreamContent, "video", "video.mp4");
         
         var httpClient = new HttpClient();
-        var endpoint = $"{_options.BaseUrl}/bot{_options.Token}/sendVideo?supports_streaming=true&chat_id={chatId}&disable_notification=true&caption={metadataSuccess.Metadata.Title}";
+        var caption = HttpUtility.UrlEncode($"{metadataSuccess.Metadata.Title}\n\nRequested by {username}.");
+        var endpoint = $"{_options.BaseUrl}/bot{_options.Token}/sendVideo?supports_streaming=true&chat_id={chatId}&disable_notification=true&caption={caption}";
 
         _logger.LogInformation("Pushing video to Telegram: {}", endpoint);
         var response = await httpClient.PostAsync(endpoint, multipartFormDataContent, cancellationToken);
