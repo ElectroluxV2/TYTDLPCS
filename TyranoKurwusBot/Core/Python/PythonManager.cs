@@ -15,9 +15,9 @@ public static partial class PythonManager
 
     public static void EnsurePackageExists(string packageName)
     {
-        // if (!File.Exists(packageName))
-        // {
-        //     throw new FileNotFoundException("Python package not found", packageName);
-        // }
+        if (!File.Exists(GetPackageBinary(packageName)))
+        {
+            throw new FileNotFoundException("Python package not found", packageName);
+        }
     }
 }
