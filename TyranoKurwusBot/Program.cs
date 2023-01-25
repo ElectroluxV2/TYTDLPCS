@@ -1,6 +1,7 @@
 using Telegram.Bot;
 using TyranoKurwusBot;
 using TyranoKurwusBot.Controllers;
+using TyranoKurwusBot.Extensions;
 using TyranoKurwusBot.Services;
 
 var builder = WebApplication.CreateBuilder(args);   
@@ -22,7 +23,7 @@ builder.Services.AddSwaggerGen();
 var botConfigurationSection = builder.Configuration.GetSection(BotConfiguration.Configuration);
 builder.Services.Configure<BotConfiguration>(botConfigurationSection);
 
-var botConfiguration = botConfigurationSection.Get<BotConfiguration>();
+var botConfiguration = botConfigurationSection.Get<BotConfiguration>()!;
 
 // Register named HttpClient to get benefits of IHttpClientFactory
 // and consume it with ITelegramBotClient typed client.
@@ -32,12 +33,18 @@ var botConfiguration = botConfigurationSection.Get<BotConfiguration>();
 builder.Services.AddHttpClient("telegram_bot_client")
                 .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
                 {
-                    BotConfiguration? botConfig = sp.GetConfiguration<BotConfiguration>();
-                    TelegramBotClientOptions options = new(botConfig.BotToken);
+                    var botConfig = sp.GetConfiguration<BotConfiguration>();
+                    TelegramBotClientOptions options = new(botConfig.BotToken); // For normal client we always use telegram api
                     return new TelegramBotClient(options, httpClient);
                 });
 
-// Dummy business-logic service
+builder.Services.AddTransient<TelegramPushBot>(sp =>
+                {
+                    TelegramBotClientOptions options = new(botConfiguration.BotToken, botConfiguration.BaseTelegramUrl); // For our client we use our api
+                    return new TelegramPushBot(options, sp.GetService<ILogger<TelegramPushBot>>()!);
+                });
+
+// Business-logic services
 builder.Services.AddScoped<UpdateHandlers>();
 builder.Services.AddScoped<VideoRequestService>();
 
@@ -61,9 +68,6 @@ if (app.Environment.IsDevelopment())
 }
 
 // app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
