@@ -1,23 +1,21 @@
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InlineQueryResults;
-using Telegram.Bot.Types.ReplyMarkups;
-
 namespace TyranoKurwusBot.Services;
 
 public class UpdateHandlers
 {
     private readonly ITelegramBotClient _botClient;
+    private readonly AllowedUsers _allowedUsers;
     private readonly VideoRequestService _videoRequestService;
     private readonly ILogger<UpdateHandlers> _logger;
 
-    public UpdateHandlers(ITelegramBotClient botClient, ILogger<UpdateHandlers> logger, VideoRequestService videoRequestService)
+    public UpdateHandlers(ITelegramBotClient botClient, ILogger<UpdateHandlers> logger, VideoRequestService videoRequestService, AllowedUsers allowedUsers)
     {
         _botClient = botClient;
         _logger = logger;
         _videoRequestService = videoRequestService;
+        _allowedUsers = allowedUsers;
     }
 
     public Task HandleErrorAsync(Exception exception, CancellationToken cancellationToken)
@@ -35,6 +33,11 @@ public class UpdateHandlers
 
     public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken = default)
     {
+        if (!_allowedUsers.IsAllowed(update))
+        {
+            return;
+        }
+        
         var handler = update switch
         {
             { Message: { } message } => _videoRequestService.Process(message, cancellationToken),
