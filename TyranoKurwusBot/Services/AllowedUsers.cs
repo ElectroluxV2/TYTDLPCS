@@ -11,7 +11,7 @@ public class AllowedUsers : IHostedService
 {
     private readonly string _password;
     private readonly ILogger<AllowedUsers> _logger;
-    private static readonly string StorageFile = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!, "allowed-users.json");
+    private static readonly string StorageFile = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!, "..", "..", "..", "allowed-users.json");
     private readonly ConcurrentDictionary<long, bool> _allowedUsersIds = new();
 
     public AllowedUsers(ILogger<AllowedUsers> logger, IConfiguration configuration)
