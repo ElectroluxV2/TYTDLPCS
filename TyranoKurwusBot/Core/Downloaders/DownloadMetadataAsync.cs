@@ -90,9 +90,11 @@ public static partial class DownloadManager
                 NumberHandling = JsonNumberHandling.AllowReadingFromString
             });
         }
-        catch
+        catch (Exception exception)
         {
-            // ignored
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            Logger.LogWarning(exception, "Error occurred while reading json: |{}|", await new StreamReader(memoryStream).ReadToEndAsync(cancellationTokenSource.Token));
+            error = exception.Message;
         }
 
         if (metadata is null)
@@ -100,7 +102,7 @@ public static partial class DownloadManager
             return new MetadataError(
                 url,
                 downloaderFullName,
-                "Downloader error TODO: implement error message"
+                $"Downloader error: {error}"
             );
         }
 

@@ -64,7 +64,7 @@ public partial class VideoRequestService
             cancellationToken: cancellationToken
         );
         
-        await _telegramPushBot.PushVideo(message.Chat.Id, cancellationToken, async (stream, httpContent, transportContext) =>
+        await _telegramPushBot.PushVideo(message.Chat.Id, metadataSuccess, cancellationToken, async (stream, httpContent, transportContext) =>
         {
             await foreach (var downloadManagerEvent in DownloadManager.YtDlp.MakeContentAsyncIterator(metadataSuccess.Metadata, cancellationToken).WithCancellation(cancellationToken))
                 switch (downloadManagerEvent)
