@@ -1,6 +1,12 @@
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using TyranoKurwusBot.Core.Common;
 
 namespace TyranoKurwusBot.Services;
 
@@ -25,6 +31,15 @@ public class ConfigureWebhook : IHostedService
         using var scope = _serviceProvider.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
+        var pem = new char[5000];
+        int pemLength;
+        GenerateSslCertificate.Certificate.TryExportCertificatePem(pem, out pemLength);
+
+        var ms = new MemoryStream();
+
+        await ms.WriteAsync(Encoding.GetEncoding(Encoding.UTF8.CodePage).GetBytes(pem), 0, pemLength, cancellationToken);
+        ms.Seek(0, SeekOrigin.Begin);
+
         // Configure custom endpoint per Telegram API recommendations:
         // https://core.telegram.org/bots/api#setwebhook
         // If you'd like to make sure that the webhook was set by you, you can specify secret data
@@ -36,7 +51,9 @@ public class ConfigureWebhook : IHostedService
             url: webhookAddress,
             allowedUpdates: Array.Empty<UpdateType>(),
             secretToken: _botConfig.SecretToken,
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken,
+            certificate: new InputFile(ms, "cert.pem")
+        );
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

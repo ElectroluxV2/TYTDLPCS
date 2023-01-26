@@ -1,10 +1,17 @@
+using System.Net;
 using Telegram.Bot;
 using TyranoKurwusBot;
 using TyranoKurwusBot.Controllers;
+using TyranoKurwusBot.Core.Common;
 using TyranoKurwusBot.Extensions;
 using TyranoKurwusBot.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(x => x.Listen(IPAddress.Any, 8443, o =>
+{
+    o.UseHttps(GenerateSslCertificate.Certificate);
+}));
 
 // Add services to the container.
 
