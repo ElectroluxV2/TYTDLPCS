@@ -13,7 +13,7 @@ public sealed class YtDlp : IDownloader
 
         return Cli
             .Wrap(PythonManager.GetPackageBinary(PackageName))
-            .WithArguments($"-v --add-header user-agent:Mozilla/5.0 -J {url}");
+            .WithArguments($"-v -J {url}");
     }
 
     public Command DownloadContent(string url)
@@ -22,7 +22,7 @@ public sealed class YtDlp : IDownloader
 
         return Cli
             .Wrap(PythonManager.GetPackageBinary(PackageName))
-            .WithArguments($"--progress --recode-video mp4 --add-header user-agent:Mozilla/5.0 -o - {url}");
+            .WithArguments($"--progress --recode-video mp4 -o - {url}");
     }
 
     public Command InstallOrUpgrade()
