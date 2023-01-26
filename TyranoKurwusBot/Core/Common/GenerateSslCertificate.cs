@@ -5,12 +5,17 @@ namespace TyranoKurwusBot.Core.Common;
 
 public static class GenerateSslCertificate
 {
-    public static readonly X509Certificate2 Certificate = GetSelfSignedCertificate();
+    private static X509Certificate2? _generated;
+    public static X509Certificate2 Certificate => _generated ?? throw new FieldAccessException("You have to generate this certificate first");
 
-    private static X509Certificate2 GetSelfSignedCertificate()
+    public static void Generate(string commonName)
+    {
+        _generated = GetSelfSignedCertificate(commonName);
+    }
+
+    private static X509Certificate2 GetSelfSignedCertificate(string commonName)
     {
         var password = Guid.NewGuid().ToString();
-        const string commonName = "TrixieBotSA";
         const int rsaKeySize = 2048;
         const int years = 5;
         var hashAlgorithm = HashAlgorithmName.SHA256;
@@ -24,8 +29,7 @@ public static class GenerateSslCertificate
                 X509KeyUsageFlags.DigitalSignature, false)
         );
         request.CertificateExtensions.Add(
-            new X509EnhancedKeyUsageExtension(
-                new OidCollection { new Oid("1.3.6.1.5.5.7.3.1") }, false)
+            new X509EnhancedKeyUsageExtension(new OidCollection { new("1.3.6.1.5.5.7.3.1") }, false)
         );
 
         var certificate =

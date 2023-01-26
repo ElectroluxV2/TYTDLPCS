@@ -1,6 +1,3 @@
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
@@ -26,18 +23,17 @@ public class ConfigureWebhook
         _botConfig = botOptions.Value;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         using var scope = _serviceProvider.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
         var pem = new char[5000];
-        int pemLength;
-        GenerateSslCertificate.Certificate.TryExportCertificatePem(pem, out pemLength);
+        GenerateSslCertificate.Certificate.TryExportCertificatePem(pem, out var pemLength);
 
         var ms = new MemoryStream();
 
-        await ms.WriteAsync(Encoding.GetEncoding(Encoding.UTF8.CodePage).GetBytes(pem), 0, pemLength, cancellationToken);
+        await ms.WriteAsync(Encoding.GetEncoding(Encoding.UTF8.CodePage).GetBytes(pem).AsMemory(0, pemLength), cancellationToken);
         ms.Seek(0, SeekOrigin.Begin);
 
         // Configure custom endpoint per Telegram API recommendations:
@@ -59,7 +55,7 @@ public class ConfigureWebhook
         _logger.LogInformation("Has custom cert: {}, last error: {}, url: {}", info.HasCustomCertificate, info.LastErrorMessage, info.Url);
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken = default)
     {
         using var scope = _serviceProvider.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();

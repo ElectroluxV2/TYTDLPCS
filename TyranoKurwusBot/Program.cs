@@ -10,6 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel(x => x.Listen(IPAddress.Any, 8443, o =>
 {
+    // Generate certificate based on domain of HostAddress
+    var hostAddress = builder.Configuration.GetValue<string>("TelegramBotConfiguration:HostAddress") ?? throw new Exception("Missing TelegramBotConfiguration:HostAddress");
+    var domain = new Uri(hostAddress).Host;
+    GenerateSslCertificate.Generate(domain);
+
     o.UseHttps(GenerateSslCertificate.Certificate);
 }));
 
@@ -66,12 +71,9 @@ builder.Services.AddHostedService<UpdateDownloaders>();
 
 var app = builder.Build();
 
-app.Lifetime.ApplicationStarted.Register(() => _ = Task.Run(async () =>
-{
-    await Task.Delay(TimeSpan.FromSeconds(10));
-    await app.Services.GetService<ConfigureWebhook>()!.StartAsync(new CancellationToken());
-}));
-app.Lifetime.ApplicationStopping.Register(() => _ = Task.Run(async () => await app.Services.GetService<ConfigureWebhook>()!.StopAsync(new CancellationToken())));
+// Telegram verifies certificate during set webhook request, so we need to post it after app is running
+app.Lifetime.ApplicationStarted.Register(() => _ = Task.Run(async () => await app.Services.GetService<ConfigureWebhook>()!.StartAsync()));
+app.Lifetime.ApplicationStopping.Register(() => _ = Task.Run(async () => await app.Services.GetService<ConfigureWebhook>()!.StopAsync()));
 
 // Construct webhook route from the Route configuration parameter
 // It is expected that BotController has single method accepting Update
