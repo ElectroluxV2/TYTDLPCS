@@ -19,6 +19,8 @@ public static partial class DownloadManager
         using var memoryStream = new MemoryStream();
         var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8);
         var command = downloader.DownloadMetadata(url).WithValidation(CommandResultValidation.None);
+        
+        Logger.LogInformation("Downloader command: {}", command.ToString());
 
         var watchdogTokenSource = new CancellationTokenSource();
         var (watchdog, tick) = TickBasedWatchDog.Make(ChildMaxTickTime, cancellationTokenSource, watchdogTokenSource.Token);
