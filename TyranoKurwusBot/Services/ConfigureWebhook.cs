@@ -54,6 +54,9 @@ public class ConfigureWebhook : IHostedService
             cancellationToken: cancellationToken,
             certificate: new InputFile(ms, "cert.pem")
         );
+
+        var info = await botClient.GetWebhookInfoAsync(cancellationToken: cancellationToken);
+        _logger.LogInformation("Has custom cert: {}, last error: {}, url: {}", info.HasCustomCertificate, info.LastErrorMessage, info.Url);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

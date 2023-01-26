@@ -10,7 +10,7 @@ public static class GenerateSslCertificate
     private static X509Certificate2 GetSelfSignedCertificate()
     {
         var password = Guid.NewGuid().ToString();
-        const string commonName = "MyCommonName";
+        const string commonName = "TrixieBotSA";
         const int rsaKeySize = 2048;
         const int years = 5;
         var hashAlgorithm = HashAlgorithmName.SHA256;
