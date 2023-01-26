@@ -10,7 +10,7 @@ using TyranoKurwusBot.Core.Common;
 
 namespace TyranoKurwusBot.Services;
 
-public class ConfigureWebhook : IHostedService
+public class ConfigureWebhook
 {
     private readonly ILogger<ConfigureWebhook> _logger;
     private readonly IServiceProvider _serviceProvider;

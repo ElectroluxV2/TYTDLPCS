@@ -61,11 +61,17 @@ builder.Services
 
 // There are several strategies for completing asynchronous tasks during startup.
 // Some of them could be found in this article https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-part-1/
-// We are going to use IHostedService to add and later remove Webhook
-builder.Services.AddHostedService<ConfigureWebhook>();
+builder.Services.AddTransient<ConfigureWebhook>(); // We use this as transient due to fact that this needs to run after kestrel
 builder.Services.AddHostedService<UpdateDownloaders>();
 
 var app = builder.Build();
+
+app.Lifetime.ApplicationStarted.Register(() => _ = Task.Run(async () =>
+{
+    await Task.Delay(TimeSpan.FromSeconds(10));
+    await app.Services.GetService<ConfigureWebhook>()!.StartAsync(new CancellationToken());
+}));
+app.Lifetime.ApplicationStopping.Register(() => _ = Task.Run(async () => await app.Services.GetService<ConfigureWebhook>()!.StopAsync(new CancellationToken())));
 
 // Construct webhook route from the Route configuration parameter
 // It is expected that BotController has single method accepting Update
