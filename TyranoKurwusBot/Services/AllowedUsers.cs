@@ -52,12 +52,15 @@ public class AllowedUsers : IHostedService
         try
         {
             using var reader = File.OpenText(StorageFile);
-            await JsonSerializer.DeserializeAsync<Dictionary<long, bool>>(reader.BaseStream,
-                cancellationToken: cancellationToken);
+            var deserialized = await JsonSerializer.DeserializeAsync<Dictionary<long, bool>>(reader.BaseStream, cancellationToken: cancellationToken);
+            foreach (var (key, value) in deserialized!)
+            {
+                _allowedUsersIds.TryAdd(key, value);
+            }
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Failed to read: {}", StorageFile);
+            _logger.LogError(exception, "Failed to read: {}, try to restart app", StorageFile);
         }
     }
 
