@@ -12,8 +12,8 @@ public sealed class YtDlp : IDownloader
         PythonManager.EnsurePackageExists(PackageName);
 
         return Cli
-            .Wrap(PythonManager.GetPackageBinary(PackageName))
-            .WithWorkingDirectory(PythonManager.PackagesPath)
+            .Wrap(PackageName)
+            .WithWorkingDirectory(PythonManager.PackagesBinPath)
             .WithArguments($"-v -J {url}");
     }
 
@@ -22,8 +22,8 @@ public sealed class YtDlp : IDownloader
         PythonManager.EnsurePackageExists(PackageName);
 
         return Cli
-            .Wrap(PythonManager.GetPackageBinary(PackageName))
-            .WithWorkingDirectory(PythonManager.PackagesPath)
+            .Wrap(PackageName)
+            .WithWorkingDirectory(PythonManager.PackagesBinPath)
             .WithArguments($"--progress --recode-video mp4 -o - {url}");
     }
 

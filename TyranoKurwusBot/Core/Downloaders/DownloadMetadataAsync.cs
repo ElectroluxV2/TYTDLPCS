@@ -60,8 +60,9 @@ public static partial class DownloadManager
                 }
             }
         }
-        catch
+        catch (Exception exception)
         {
+            Logger.LogError(exception, "Failed to download metadata");
             error = $"{downloaderFullName} failed to report metadata download progress in {ChildMaxTickTime.ToString()}.";
         }
         
