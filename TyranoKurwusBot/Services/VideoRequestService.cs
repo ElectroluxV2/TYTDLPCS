@@ -56,7 +56,7 @@ public partial class VideoRequestService
         }
 
         var metadataSuccess = (metadataEvent as MetadataSuccess)!;
-        await _botClient.SendTextMessageAsync(
+        var dowloadMessage = await _botClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
             text: $"Download: {metadataSuccess.Metadata.Title.Replace(".", "\\.")}",
             disableNotification: true,
@@ -82,6 +82,10 @@ public partial class VideoRequestService
                         stream.Close();
                         break;
                 }
+            
+            // Delete redundant messages
+            await _botClient.DeleteMessageAsync(dowloadMessage.Chat.Id, dowloadMessage.MessageId, cancellationToken);
+            await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
         });
     }
 }
