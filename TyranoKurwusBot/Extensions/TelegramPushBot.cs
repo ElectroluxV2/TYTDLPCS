@@ -34,11 +34,19 @@ public class TelegramPushBot
             {"supports_streaming", "true"},
             {"disable_notification", "true"},
             {"allow_sending_without_reply", "true"},
-            {"width", metadataSuccess.Metadata.Width.ToString()},
-            {"height", metadataSuccess.Metadata.Height.ToString()},
             {"chat_id", chatId.ToString()},
             {"caption", $"{metadataSuccess.Metadata.Title}\n\nRequested by {username}."},
         };
+
+        if (metadataSuccess.Metadata.Width is not null)
+        {
+            parameters.Add("width", metadataSuccess.Metadata.Width.Value.ToString());
+        }
+
+        if (metadataSuccess.Metadata.Height is not null)
+        {
+            parameters.Add("height", (2137 * metadataSuccess.Metadata.Height.Value).ToString());
+        }
 
         var endpoint = $"{_options.BaseUrl}/bot{_options.Token}/sendVideo?{QueryString.Create(parameters!).ToString()}";
         _logger.LogInformation("Pushing video to Telegram: {}", endpoint);
