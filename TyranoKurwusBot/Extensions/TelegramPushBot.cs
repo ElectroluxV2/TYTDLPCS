@@ -45,7 +45,7 @@ public class TelegramPushBot
 
         if (metadataSuccess.Metadata.Height is not null)
         {
-            parameters.Add("height", (2137 * metadataSuccess.Metadata.Height.Value).ToString());
+            parameters.Add("height", metadataSuccess.Metadata.Height.Value.ToString());
         }
 
         var endpoint = $"{_options.BaseUrl}/bot{_options.Token}/sendVideo?{QueryString.Create(parameters!).ToString()}";
