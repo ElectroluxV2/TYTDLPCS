@@ -81,34 +81,30 @@ public static partial class DownloadManager
         await streamWriter.FlushAsync();
         memoryStream.Seek(0, SeekOrigin.Begin);
 
-        VideoMetadata? metadata = null;
-
         try
         {
-            metadata = await JsonSerializer.DeserializeAsync<VideoMetadata>(memoryStream, cancellationToken: cancellationTokenSource.Token, options: new JsonSerializerOptions
+            var metadata = await JsonSerializer.DeserializeAsync<VideoMetadata>(memoryStream, cancellationToken: cancellationTokenSource.Token, options: new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 AllowTrailingCommas = true,
                 ReadCommentHandling = JsonCommentHandling.Skip,
                 NumberHandling = JsonNumberHandling.AllowReadingFromString
             });
+
+            if (metadata is null) throw new ArgumentNullException("Metadata is null", null as Exception);
+
+            return new MetadataSuccess(metadata);
         }
         catch (Exception exception)
         {
             memoryStream.Seek(0, SeekOrigin.Begin);
             Logger.LogWarning(exception, "Error occurred while reading json: |{}|", await new StreamReader(memoryStream).ReadToEndAsync(cancellationTokenSource.Token));
-            error = exception.Message;
-        }
-
-        if (metadata is null)
-        {
+            
             return new MetadataError(
                 url,
                 downloaderFullName,
-                $"Downloader error: {error}"
+                $"Downloader error: {exception.Message}"
             );
         }
-
-        return new MetadataSuccess(metadata);
     }
 }
