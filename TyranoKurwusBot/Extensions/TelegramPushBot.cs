@@ -29,9 +29,18 @@ public class TelegramPushBot
         multipartFormDataContent.Add(pushStreamContent, "video", "video.mp4");
         
         var httpClient = new HttpClient();
-        var caption = HttpUtility.UrlEncode($"{metadataSuccess.Metadata.Title}\n\nRequested by {username}.");
-        var endpoint = $"{_options.BaseUrl}/bot{_options.Token}/sendVideo?supports_streaming=true&chat_id={chatId}&disable_notification=true&caption={caption}";
+        var parameters = new Dictionary<string, string>
+        {
+            {"supports_streaming", "true"},
+            {"disable_notification", "true"},
+            {"allow_sending_without_reply", "true"},
+            {"width", metadataSuccess.Metadata.Width.ToString()},
+            {"height", metadataSuccess.Metadata.Height.ToString()},
+            {"chat_id", chatId.ToString()},
+            {"caption", $"{metadataSuccess.Metadata.Title}\n\nRequested by {username}."},
+        };
 
+        var endpoint = $"{_options.BaseUrl}/bot{_options.Token}/sendVideo?{QueryString.Create(parameters!).ToString()}";
         _logger.LogInformation("Pushing video to Telegram: {}", endpoint);
         var response = await httpClient.PostAsync(endpoint, multipartFormDataContent, cancellationToken);
         httpClient.Dispose();
