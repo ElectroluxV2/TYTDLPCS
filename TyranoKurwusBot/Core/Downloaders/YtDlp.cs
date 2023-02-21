@@ -13,7 +13,6 @@ public sealed class YtDlp : IDownloader
 
         return Cli
             .Wrap(PackageName)
-            .WithWorkingDirectory(PythonManager.PackagesBinPath)
             .WithArguments($"-v -J {url}");
     }
 
@@ -23,12 +22,11 @@ public sealed class YtDlp : IDownloader
 
         return Cli
             .Wrap(PackageName)
-            .WithWorkingDirectory(PythonManager.PackagesBinPath)
             .WithArguments($"--progress --recode-video mp4 -o - {url}");
     }
 
     public Command InstallOrUpgrade()
     {
-        return PythonManager.InstalPackage(PackageName);
+        return PythonManager.InstallPackage(PackageName);
     }
 }

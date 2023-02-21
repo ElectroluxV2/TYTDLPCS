@@ -13,7 +13,7 @@ public class PreparePackagesService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        foreach (var downloader in DownloadManager.AvailableDownloders) await downloader.InstallOrUpdateAsync();
+        foreach (var downloader in DownloadManager.AvailableDownloaders) await downloader.InstallOrUpdateAsync();
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

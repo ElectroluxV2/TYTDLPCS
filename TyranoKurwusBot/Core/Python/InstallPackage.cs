@@ -4,10 +4,10 @@ namespace TyranoKurwusBot.Core.Python;
 
 public partial class PythonManager
 {
-    public static Command InstalPackage(string PackageName)
+    public static Command InstallPackage(string packageName)
     {
         return Cli
             .Wrap(PipPath)
-            .WithArguments($"install --target {PackagesPath} --upgrade-strategy eager --upgrade {PackageName}");
+            .WithArguments($"install --upgrade-strategy eager --upgrade {packageName}");
     }
 }
