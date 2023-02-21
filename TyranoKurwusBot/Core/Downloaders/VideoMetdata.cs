@@ -6,7 +6,9 @@ public record VideoMetadata(
     string Id,
     string Extractor,
     string Title,
-    int Duration,
+    double Duration,
+    int? Width,
+    int? Height,
     (string Id, string Url)[] Thumbnails,
     VideoMetadata?[]? Entries,
     [property: JsonPropertyName("original_url")]

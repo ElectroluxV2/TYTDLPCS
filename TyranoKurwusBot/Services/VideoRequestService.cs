@@ -1,43 +1,39 @@
-using System.Globalization;
-using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using TyranoKurwusBot.Core.Downloaders;
+using TyranoKurwusBot.Extensions;
 
 namespace TyranoKurwusBot.Services;
 
-public partial class VideoRequestService
+public partial class VideoRequestService 
 {
-    private readonly ITelegramBotClient _botClient;
-    private readonly IConfiguration _configuration;
-    private readonly Regex _extractUrlRegex = MyRegex();
+    private readonly Regex _extractUrlRegex = UrlRegex();
     private readonly ILogger<VideoRequestService> _logger;
+    private readonly ITelegramBotClient _botClient;
+    private readonly TelegramPushBot _telegramPushBot;
 
+    [GeneratedRegex("https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)")]
+    private static partial Regex UrlRegex();
 
-    public VideoRequestService(ILogger<VideoRequestService> logger, ITelegramBotClient botClient,
-        IConfiguration configuration)
+    public VideoRequestService(ILogger<VideoRequestService> logger, ITelegramBotClient botClient, TelegramPushBot telegramPushBot)
     {
         _logger = logger;
         _botClient = botClient;
-        _configuration = configuration;
+        _telegramPushBot = telegramPushBot;
     }
 
-    [GeneratedRegex(
-        "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)")]
-    private static partial Regex MyRegex();
-
-    public async Task Process(Message message, CancellationToken cancelationToken)
+    public async Task Process(Message message, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Got message: {}", message.Text);
+        _logger.LogInformation("Parsing message for links: {}", message.Text);
 
         var links = _extractUrlRegex.Matches(message.Text ?? "")
-            .Select(m => m.Value)
+            .Select(m => m.Value) 
             .ToArray();
 
         foreach (var link in links)
         {
-            await Handle(link, message, cancelationToken);
+            await Handle(link, message, cancellationToken);
         }
     }
 
@@ -47,8 +43,7 @@ public partial class VideoRequestService
 
         if (metadataEvent is MetadataError metadataError)
         {
-            _logger.LogError("Failed to download metadata for {Url}: {Message}", metadataError.Url,
-                metadataError.Message);
+            _logger.LogError("Failed to download metadata for {Url}: {Message}", metadataError.Url, metadataError.Message);
             await _botClient.SendTextMessageAsync(
                 chatId: message.Chat.Id,
                 text: $"Error: {metadataError.Message.Replace(".", "\\.")}",
@@ -56,56 +51,41 @@ public partial class VideoRequestService
                 replyToMessageId: message.MessageId,
                 cancellationToken: cancellationToken
             );
-
+                    
             return;
         }
 
         var metadataSuccess = (metadataEvent as MetadataSuccess)!;
-        await _botClient.SendTextMessageAsync(
+        var dowloadMessage = await _botClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
             text: $"Download: {metadataSuccess.Metadata.Title.Replace(".", "\\.")}",
             disableNotification: true,
             replyToMessageId: message.MessageId,
             cancellationToken: cancellationToken
         );
-
-        using var multipartFormDataContent =
-            new MultipartFormDataContent("Upload----" + DateTime.Now.ToString(CultureInfo.InvariantCulture));
-        var pushStreamContent = new PushStreamContent(async (stream, httpContent, transportContext) =>
+        
+        await _telegramPushBot.PushVideo(message.Chat.Id, message.From!.Username ?? message.From!.FirstName, metadataSuccess, cancellationToken, async (stream, httpContent, transportContext) =>
         {
-            await foreach (var downloadManagerEvent in DownloadManager.YtDlp
-                               .MakeContentAsyncIterator(metadataSuccess.Metadata, cancellationToken)
-                               .WithCancellation(cancellationToken))
+            await foreach (var downloadManagerEvent in DownloadManager.YtDlp.MakeContentAsyncIterator(metadataSuccess.Metadata, cancellationToken).WithCancellation(cancellationToken))
                 switch (downloadManagerEvent)
                 {
                     case ContentBegin contentBegin:
-                        _logger.LogInformation("Saving {}", contentBegin.Metadata.Title);
+                        _logger.LogInformation("Pushing {}", contentBegin.Metadata.Title);
                         break;
-
+                    
                     case ContentBytes contentBytes:
-                        _logger.LogCritical("L: {}", contentBytes.Bytes.Length);
                         stream.Write(contentBytes.Bytes);
                         break;
-
+                    
                     case ContentEnd contentEnd:
-                        _logger.LogInformation("Saved");
+                        _logger.LogInformation("Pushed");
                         stream.Close();
                         break;
                 }
+            
+            // Delete redundant messages
+            await _botClient.DeleteMessageAsync(dowloadMessage.Chat.Id, dowloadMessage.MessageId, cancellationToken);
+            await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
         });
-
-        pushStreamContent.Headers.ContentType = MediaTypeHeaderValue.Parse("video/mp4");
-        multipartFormDataContent.Add(pushStreamContent, "video", "test.mp4");
-
-        var httpClient = new HttpClient();
-        var endpoint =
-            $"https://api.telegram.org/bot{_configuration.GetSection("BotConfiguration")["BotToken"]}/sendVideo?supports_streaming=true&chat_id={message.Chat.Id}";
-
-        _logger.LogWarning("Sending: {}", endpoint);
-
-        var response = await httpClient.PostAsync(endpoint, multipartFormDataContent, cancellationToken);
-        httpClient.Dispose();
-        var sd = await response.Content.ReadAsStringAsync(cancellationToken);
-        _logger.LogInformation("Response: {}, {}", response.StatusCode, sd);
     }
 }

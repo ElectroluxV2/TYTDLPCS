@@ -1,10 +1,9 @@
 using Microsoft.Extensions.Options;
 
-namespace TyranoKurwusBot;
+namespace TyranoKurwusBot.Extensions;
 
 
-public static class Extensions
-
+public static class TelegramBotExtensions
 {
     public static T GetConfiguration<T>(this IServiceProvider serviceProvider)
         where T : class

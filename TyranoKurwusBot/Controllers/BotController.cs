@@ -9,12 +9,17 @@ public class BotController : ControllerBase
 {
     [HttpPost]
     [ValidateTelegramBot]
-    public async Task<IActionResult> Post(
+    public IActionResult Post(
         [FromBody] Update update,
-        [FromServices] UpdateHandlers handleUpdateService,
-        CancellationToken cancellationToken)
+        [FromServices] IServiceScopeFactory serviceScopeFactory)
     {
-        await handleUpdateService.HandleUpdateAsync(update, cancellationToken);
-        return Ok();
+        _ = Task.Run(async () =>
+        {
+            using var scope = serviceScopeFactory.CreateScope();
+            var updateHandlers = scope.ServiceProvider.GetRequiredService<UpdateHandlers>();
+            await updateHandlers.HandleUpdateAsync(update);
+        });
+
+        return new OkResult();
     }
 }

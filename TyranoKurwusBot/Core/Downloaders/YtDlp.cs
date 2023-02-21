@@ -12,8 +12,9 @@ public sealed class YtDlp : IDownloader
         PythonManager.EnsurePackageExists(PackageName);
 
         return Cli
-            .Wrap(PythonManager.GetPackageBinary(PackageName))
-            .WithArguments($"-v --add-header user-agent:Mozilla/5.0 -J {url}");
+            .Wrap(PackageName)
+            .WithWorkingDirectory(PythonManager.PackagesBinPath)
+            .WithArguments($"-v -J {url}");
     }
 
     public Command DownloadContent(string url)
@@ -21,8 +22,9 @@ public sealed class YtDlp : IDownloader
         PythonManager.EnsurePackageExists(PackageName);
 
         return Cli
-            .Wrap(PythonManager.GetPackageBinary(PackageName))
-            .WithArguments($"--progress --add-header user-agent:Mozilla/5.0 -o - {url}");
+            .Wrap(PackageName)
+            .WithWorkingDirectory(PythonManager.PackagesBinPath)
+            .WithArguments($"--progress --recode-video mp4 -o - {url}");
     }
 
     public Command InstallOrUpgrade()
